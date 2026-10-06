@@ -102,6 +102,17 @@ app.delete('/appointments/:id', (req, res) => {
   res.status(200).json({ message: 'Appointment cancelled' });
 });
 
+// MQ-5: Prescription
+app.post('/prescriptions', (req, res) => {
+  const { appointmentId, diagnosis, medicines } = req.body;
+  if (!diagnosis || !medicines || (Array.isArray(medicines) && medicines.length === 0) || medicines === '') {
+    return res.status(400).json({ error: 'Diagnosis and medicines are required' });
+  }
+  const prescriptionId = uuidv4();
+  prescriptions.push({ prescriptionId, appointmentId, diagnosis, medicines });
+  res.status(201).json({ prescriptionId, message: 'Prescription created' });
+});
+
 // MQ-6: Dashboard
 app.get('/dashboard', (req, res) => {
   const today = new Date();
