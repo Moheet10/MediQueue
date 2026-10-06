@@ -73,6 +73,18 @@ app.get('/doctors', (req, res) => {
   res.status(200).json(filtered);
 });
 
+// MQ-3: Book Appointment — FIXED: duplicate check added
+app.post('/appointments', (req, res) => {
+  const { patientId, doctorId, slot } = req.body;
+  const exists = appointments.find(a => a.doctorId === doctorId && a.slot === slot);
+  if (exists) {
+    return res.status(409).json({ error: 'Slot already booked' });
+  }
+  const bookingId = uuidv4();
+  appointments.push({ bookingId, patientId, doctorId, slot, status: 'Booked' });
+  res.status(201).json({ bookingId, message: 'Appointment booked successfully' });
+});
+
 // MQ-6: Dashboard
 app.get('/dashboard', (req, res) => {
   const today = new Date();
