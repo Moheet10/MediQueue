@@ -67,4 +67,14 @@ describe('MediQueue API Tests', () => {
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/cannot cancel/i);
   });
+
+  test('TC07: Prescription with empty medicine field is rejected', async () => {
+    const res = await request(app).post('/prescriptions').send({
+      appointmentId: 'appt-1',
+      diagnosis: 'Flu',
+      medicines: ''
+    });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/required/i);
+  });
 });
