@@ -55,4 +55,16 @@ describe('MediQueue API Tests', () => {
     const res = await request(app).post('/appointments').send(payload);
     expect(res.status).toBe(409);
   });
+
+  test('TC06: Cancelling 1 hour before the slot is rejected', async () => {
+    const soonSlot = new Date(Date.now() + 60 * 60 * 1000);
+    const booking = await request(app).post('/appointments').send({
+      patientId: 'patient-3',
+      doctorId: 'doc-3',
+      slot: soonSlot.toISOString()
+    });
+    const res = await request(app).delete('/appointments/' + booking.body.bookingId);
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/cannot cancel/i);
+  });
 });
