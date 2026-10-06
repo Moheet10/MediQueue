@@ -1,0 +1,89 @@
+name: MediQueue CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Run tests
+        run: npm test -- --ci --reporters=default --reporters=jest-junit
+        env:
+          JEST_JUNIT_OUTPUT_DIR: ./reports
+          JEST_JUNIT_OUTPUT_NAME: test-report.xml
+
+      - name: Upload test report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-report
+          path: reports/test-report.xml
+          retention-days: 30
+
+  deploy:
+    name: Deploy to Staging
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: staging
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          echo "========================================"
+          echo "  Building Docker image for MediQueue"
+          echo "========================================"
+          docker build -t mediqueue:${{ github.sha }} .
+          docker tag mediqueue:${{ github.sha }} mediqueue:latest
+          echo ""
+          echo "Image built successfully:"
+          docker images mediqueue
+
+      - name: Simulate staging deployment
+        run: |
+          echo "========================================"
+          echo "  DEPLOYING TO STAGING ENVIRONMENT"
+          echo "========================================"
+          echo "Image:       mediqueue:${{ github.sha }}"
+          echo "Environment: staging"
+          echo "Timestamp:   $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          echo "Commit:      ${{ github.sha }}"
+          echo "Branch:      ${{ github.ref_name }}"
+          echo "Actor:       ${{ github.actor }}"
+          echo ""
+          echo "Running smoke test..."
+          docker run -d --name mediqueue-staging -p 3000:3000 mediqueue:latest
+          sleep 3
+          echo "Container status:"
+          docker ps --filter name=mediqueue-staging
+          echo ""
+          echo "Health check (container logs):"
+          docker logs mediqueue-staging
+          echo ""
+          docker stop mediqueue-staging
+          docker rm mediqueue-staging
+          echo "========================================"
+          echo "  STAGING DEPLOYMENT COMPLETE ✅"
+          echo "========================================"

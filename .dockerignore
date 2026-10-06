@@ -1,0 +1,7 @@
+node_modules
+npm-debug.log
+.github
+tests
+docs
+jira
+coverage
