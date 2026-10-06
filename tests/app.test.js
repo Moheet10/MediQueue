@@ -22,4 +22,14 @@ describe('MediQueue API Tests', () => {
     expect(res.status).toBe(423);
     expect(res.body.message).toMatch(/locked/i);
   });
+
+  test('TC03: Search Cardiology returns only available cardiologists', async () => {
+    const res = await request(app).get('/doctors?specialty=Cardiology&available=true');
+    expect(res.status).toBe(200);
+    expect(res.body.length).toBeGreaterThan(0);
+    res.body.forEach(doc => {
+      expect(doc.specialty).toBe('Cardiology');
+      expect(doc.available).toBe(true);
+    });
+  });
 });
