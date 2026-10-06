@@ -2,7 +2,7 @@
 
 > Healthcare Appointment & Consultation Manager — Agile & DevOps Assignment
 
-![CI/CD](https://github.com/<OWNER>/<REPO>/actions/workflows/ci-cd.yml/badge.svg)
+![CI/CD](https://github.com/Moheet10/MediQueue/actions/workflows/ci-cd.yml/badge.svg)
 
 ## Overview
 MediQueue is a RESTful healthcare API built with Node.js and Express. It demonstrates:
@@ -105,4 +105,5 @@ MediQueue/
 - [Jira-GitHub Integration](docs/jira-github-integration.md)
 - [Evidence Checklist](docs/EVIDENCE.md)
 
-Note: Replace `<OWNER>/<REPO>` in the badge URL above with your actual GitHub username and repository name.
+Note: Replace `Moheet10/MediQueue` in the badge URL above with your actual GitHub username and repository name.
+
