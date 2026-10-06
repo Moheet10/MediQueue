@@ -73,4 +73,17 @@ app.get('/doctors', (req, res) => {
   res.status(200).json(filtered);
 });
 
+// MQ-6: Dashboard
+app.get('/dashboard', (req, res) => {
+  const today = new Date();
+  const todayStr = today.toISOString().split('T')[0];
+  const todaysAppointments = appointments.filter(a => {
+    return a.slot.startsWith(todayStr);
+  });
+  res.status(200).json({
+    date: today.toISOString(),
+    appointments: todaysAppointments
+  });
+});
+
 module.exports = app;
