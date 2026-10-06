@@ -73,7 +73,7 @@ app.get('/doctors', (req, res) => {
   res.status(200).json(filtered);
 });
 
-// MQ-3: Book Appointment — FIXED: duplicate check added
+// MQ-3: Book Appointment
 app.post('/appointments', (req, res) => {
   const { patientId, doctorId, slot } = req.body;
   const exists = appointments.find(a => a.doctorId === doctorId && a.slot === slot);
@@ -83,6 +83,23 @@ app.post('/appointments', (req, res) => {
   const bookingId = uuidv4();
   appointments.push({ bookingId, patientId, doctorId, slot, status: 'Booked' });
   res.status(201).json({ bookingId, message: 'Appointment booked successfully' });
+});
+
+// MQ-4: Cancel Appointment
+app.delete('/appointments/:id', (req, res) => {
+  const { id } = req.params;
+  const idx = appointments.findIndex(a => a.bookingId === id);
+  if (idx === -1) {
+    return res.status(404).json({ error: 'Appointment not found' });
+  }
+  const appt = appointments[idx];
+  const slotTime = new Date(appt.slot).getTime();
+  const twoHoursFromNow = Date.now() + 2 * 60 * 60 * 1000;
+  if (slotTime <= twoHoursFromNow) {
+    return res.status(400).json({ error: 'Cannot cancel less than 2 hours before appointment' });
+  }
+  appointments.splice(idx, 1);
+  res.status(200).json({ message: 'Appointment cancelled' });
 });
 
 // MQ-6: Dashboard
