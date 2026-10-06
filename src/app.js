@@ -73,6 +73,15 @@ app.get('/doctors', (req, res) => {
   res.status(200).json(filtered);
 });
 
+// MQ-3: Book Appointment — BUG: missing duplicate slot check!
+app.post('/appointments', (req, res) => {
+  const { patientId, doctorId, slot } = req.body;
+  // BUG: no duplicate check — TC05 will FAIL
+  const bookingId = uuidv4();
+  appointments.push({ bookingId, patientId, doctorId, slot, status: 'Booked' });
+  res.status(201).json({ bookingId, message: 'Appointment booked successfully' });
+});
+
 // MQ-6: Dashboard
 app.get('/dashboard', (req, res) => {
   const today = new Date();

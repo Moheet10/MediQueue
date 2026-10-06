@@ -32,4 +32,27 @@ describe('MediQueue API Tests', () => {
       expect(doc.available).toBe(true);
     });
   });
+
+  test('TC04: Booking a free slot returns a booking ID', async () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(10, 0, 0, 0);
+    const res = await request(app).post('/appointments').send({
+      patientId: 'patient-1',
+      doctorId: 'doc-1',
+      slot: tomorrow.toISOString()
+    });
+    expect(res.status).toBe(201);
+    expect(res.body).toHaveProperty('bookingId');
+  });
+
+  test('TC05: Booking the same slot twice returns 409', async () => {
+    const dayAfter = new Date();
+    dayAfter.setDate(dayAfter.getDate() + 2);
+    dayAfter.setHours(14, 0, 0, 0);
+    const payload = { patientId: 'patient-2', doctorId: 'doc-2', slot: dayAfter.toISOString() };
+    await request(app).post('/appointments').send(payload);
+    const res = await request(app).post('/appointments').send(payload);
+    expect(res.status).toBe(409);
+  });
 });
