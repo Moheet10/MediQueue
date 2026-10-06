@@ -4,7 +4,6 @@ const { v4: uuidv4 } = require('uuid');
 const app = express();
 app.use(express.json());
 
-// In-memory data stores
 const users = [];
 const appointments = [];
 const prescriptions = [];
@@ -58,6 +57,20 @@ app.post('/login', (req, res) => {
     userId: user.userId,
     token: `demo-token-${user.userId}`
   });
+});
+
+// MQ-2: Doctor Search
+app.get('/doctors', (req, res) => {
+  const { specialty, available } = req.query;
+  let filtered = doctors;
+  if (specialty) {
+    filtered = filtered.filter(d => d.specialty === specialty);
+  }
+  if (available !== undefined) {
+    const isAvail = available === 'true';
+    filtered = filtered.filter(d => d.available === isAvail);
+  }
+  res.status(200).json(filtered);
 });
 
 module.exports = app;
