@@ -73,10 +73,13 @@ app.get('/doctors', (req, res) => {
   res.status(200).json(filtered);
 });
 
-// MQ-3: Book Appointment — BUG: missing duplicate slot check!
+// MQ-3: Book Appointment — FIXED: duplicate check added
 app.post('/appointments', (req, res) => {
   const { patientId, doctorId, slot } = req.body;
-  // BUG: no duplicate check — TC05 will FAIL
+  const exists = appointments.find(a => a.doctorId === doctorId && a.slot === slot);
+  if (exists) {
+    return res.status(409).json({ error: 'Slot already booked' });
+  }
   const bookingId = uuidv4();
   appointments.push({ bookingId, patientId, doctorId, slot, status: 'Booked' });
   res.status(201).json({ bookingId, message: 'Appointment booked successfully' });
